@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gửi Lời Chúc Yêu Thương</title>
+    <title>Chúc Mừng Sinh Nhật</title>
     <style>
         :root {
             --primary-color: #ff6b81;
@@ -14,116 +14,127 @@
             margin: 0; padding: 0; height: 100vh;
             display: flex; justify-content: center; align-items: center;
             background: var(--bg-gradient);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
             overflow: hidden;
             flex-direction: column;
         }
 
-        /* Hiệu ứng nến sinh nhật */
-        .candle-container {
-            cursor: pointer; transition: 0.5s;
-            margin-bottom: 20px;
+        /* Nút Nhạc */
+        #music-btn {
+            position: fixed; top: 20px; right: 20px; z-index: 100;
+            background: white; border-radius: 50%; width: 50px; height: 50px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 24px; transition: 0.3s;
         }
+        .spinning { animation: spin 4s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Nến */
+        .candle-container { cursor: pointer; text-align: center; }
         .flame {
-            width: 20px; height: 30px; background: orange;
+            width: 24px; height: 35px; background: orange;
             margin: 0 auto; border-radius: 50% 50% 20% 20%;
             animation: flicker 0.1s infinite alternate;
             box-shadow: 0 0 20px orange;
         }
-        @keyframes flicker {
-            from { transform: scale(1); } to { transform: scale(1.1); }
-        }
-        .stick {
-            width: 15px; height: 60px; background: #fff;
-            border-bottom: 5px solid #ddd; margin: 0 auto;
-        }
+        @keyframes flicker { from { transform: scale(1); } to { transform: scale(1.1); } }
+        .stick { width: 18px; height: 70px; background: #fff; margin: 0 auto; border-radius: 4px; }
 
-        /* Khung lời chúc */
+        /* Lời chúc */
         #message-box {
-            background: white; padding: 40px;
-            border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            max-width: 450px; width: 90%; text-align: center;
-            display: none; position: relative; z-index: 10;
+            background: white; padding: 30px; border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            max-width: 400px; width: 85%; text-align: center;
+            display: none; z-index: 10;
         }
+        #typing-text { font-size: 1.3rem; font-weight: bold; color: #333; min-height: 80px; margin: 20px 0; }
 
-        #typing-text {
-            font-size: 1.5rem; color: #333; min-height: 80px;
-            line-height: 1.5; font-weight: bold;
+        .heart { position: absolute; color: var(--primary-color); animation: fly 4s linear forwards; pointer-events: none; }
+        @keyframes fly { 
+            0% { transform: translateY(0); opacity: 1; } 
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; } 
         }
-
-        /* Hiệu ứng trái tim */
-        .heart {
-            position: absolute; color: var(--primary-color);
-            font-size: 20px; pointer-events: none;
-            animation: flyUp 4s linear forwards;
-        }
-        @keyframes flyUp {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
-        }
-
-        .hidden { display: none; }
-        .instruction { color: #888; margin-top: 10px; font-style: italic; }
+        .instruction { color: #888; margin-top: 15px; font-style: italic; }
     </style>
 </head>
 <body>
 
+    <div id="music-btn" onclick="toggleMusic()">🎵</div>
+
     <div id="candle-section" class="candle-container" onclick="startSurprise()">
         <div class="flame" id="flame"></div>
         <div class="stick"></div>
-        <p class="instruction">Chạm vào nến để thổi và xem điều ước...</p>
+        <p class="instruction">Chạm vào nến để thổi và nghe nhạc nhé! 🎂</p>
     </div>
 
     <div id="message-box">
-        <h1 style="color: var(--primary-color);">Happy Birthday! 🎂</h1>
+        <h1 style="color: var(--primary-color);">Happy Birthday! 🎉</h1>
         <div id="typing-text"></div>
-        <p style="margin-top: 20px; font-size: 0.9rem; color: #ff6b81;">- Mãi luôn xinh đẹp và hạnh phúc nhé! -</p>
     </div>
 
-    <audio id="hbdMusic">
-        <source src="https://www.chosic.com/wp-content/uploads/2021/04/Happy-Birthday-Preview.mp3" type="audio/mpeg">
+    <audio id="hbdMusic" preload="auto" loop>
+        <source src="./Happy Birthday.mp4" type="audio/mpeg">
     </audio>
 
     <script>
-        const textToType = "Chúc mừng sinh nhật ! Chúc nghi tuổi mới thật nhiều niềm vui, sức khỏe dồi dào và sớm đạt được mọi dự định nhé! ✨💖";
+        const music = document.getElementById('hbdMusic');
+        const musicBtn = document.getElementById('music-btn');
+        const textToType = "Chúc mừng sinh nhật !  Chúc nghi 🐢🐢🐢🐢🐢tuổi mới luôn ngập tràn niềm vui, xinh đẹp rạng ngời và sớm chinh phục được mọi ước mơ của mình nhé! Happy Birthday to You! ✨🎁";
         let index = 0;
+
+        // Hàm đảm bảo nhạc phát được trên mọi trình duyệt
+        function playMusic() {
+            music.play().then(() => {
+                musicBtn.classList.add('spinning');
+                musicBtn.innerText = "⏸️";
+            }).catch(error => {
+                console.log("Trình duyệt chặn tự động phát, cần tương tác thêm.");
+            });
+        }
+
+        function toggleMusic() {
+            if (music.paused) {
+                playMusic();
+            } else {
+                music.pause();
+                musicBtn.classList.remove('spinning');
+                musicBtn.innerText = "🎵";
+            }
+        }
 
         function typeEffect() {
             if (index < textToType.length) {
                 document.getElementById("typing-text").innerHTML += textToType.charAt(index);
                 index++;
-                setTimeout(typeEffect, 100); // Tốc độ gõ chữ
+                setTimeout(typeEffect, 100);
             }
         }
 
         function createHeart() {
             const heart = document.createElement("div");
             heart.innerHTML = "❤️";
-            heart.classList.add("heart");
+            heart.className = "heart";
             heart.style.left = Math.random() * 100 + "vw";
-            heart.style.bottom = "-5vh";
+            heart.style.bottom = "0";
             heart.style.fontSize = (Math.random() * 20 + 10) + "px";
-            heart.style.animationDuration = (Math.random() * 2 + 3) + "s";
             document.body.appendChild(heart);
             setTimeout(() => heart.remove(), 4000);
         }
 
         function startSurprise() {
-            // Tắt nến
+            // Bước quan trọng: Phát nhạc ngay khi chạm vào nến
+            playMusic();
+
             document.getElementById('flame').style.display = 'none';
             document.getElementById('candle-section').style.opacity = '0';
-            setTimeout(() => document.getElementById('candle-section').style.display = 'none', 500);
-
-            // Hiện khung lời chúc
-            const box = document.getElementById('message-box');
-            box.style.display = 'block';
             
-            // Phát nhạc
-            document.getElementById('hbdMusic').play();
-
-            // Chạy hiệu ứng
-            setTimeout(typeEffect, 500);
-            setInterval(createHeart, 300);
+            setTimeout(() => {
+                document.getElementById('candle-section').style.display = 'none';
+                document.getElementById('message-box').style.display = 'block';
+                typeEffect();
+                setInterval(createHeart, 300);
+            }, 500);
         }
     </script>
 </body>
